@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>License & Subscription Manager</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f8f9fa; padding: 20px; }
+    h2 { text-align: center; color: #333; }
+    .section { background: #fff; padding: 20px; margin: 20px auto; border-radius: 10px; max-width: 1000px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    input, select { margin: 5px; padding: 10px; width: 200px; }
+    button { padding: 10px 15px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    button:hover { background: #0056b3; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+    th { background: #007bff; color: white; }
+  </style>
+</head>
+<body>
+
+  <h2>Software License & Subscription Manager</h2>
+  <div class="section">
+    <h3>Add New License</h3>
+    <input type="text" id="softwareName" placeholder="Software Name">
+    <input type="text" id="licenseType" placeholder="License Type">
+    <input type="number" id="licenseCount" placeholder="Number of Licenses">
+    <input type="date" id="expiryDate" placeholder="Expiry Date">
+    <input type="number" id="costPerLicense" placeholder="Cost per License">
+    <input type="text" id="team" placeholder="Responsible Team">
+    <button onclick="addLicense()">➕ Add License</button>
+  </div>
+
+  <div class="section">
+    <h3>All Licenses</h3>
+    <table id="licenseTable">
+      <thead>
+        <tr>
+          <th>Software</th>
+          <th>Type</th>
+          <th>Licenses</th>
+          <th>Expiry</th>
+          <th>Cost</th>
+          <th>Team</th>
+          <th>Days Left</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+<script>
+  const tableBody = document.querySelector('#licenseTable tbody');
+
+  function addLicense() {
+    const name = document.getElementById('softwareName').value.trim();
+    const type = document.getElementById('licenseType').value.trim();
+    const count = document.getElementById('licenseCount').value;
+    const expiry = document.getElementById('expiryDate').value;
+    const cost = document.getElementById('costPerLicense').value;
+    const team = document.getElementById('team').value.trim();
+
+    if (!name || !type || !count || !expiry || !cost || !team) {
+      alert('Please fill in all fields.');
+      return;
+    }
+
+    const daysLeft = Math.floor((new Date(expiry) - new Date()) / (1000 * 60 * 60 * 24));
+
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${name}</td>
+      <td>${type}</td>
+      <td>${count}</td>
+      <td>${expiry}</td>
+      <td>$${cost}</td>
+      <td>${team}</td>
+      <td style="color:${daysLeft < 30 ? 'red' : 'green'}">${daysLeft} days</td>
+    `;
+    tableBody.appendChild(row);
+
+    document.querySelectorAll('input').forEach(input => input.value = '');
+  }
+</script>
+
+</body>
+</html>
