@@ -115,6 +115,7 @@
   <input type="file" id="assetImage" accept="image/*">
   <br>
   <button onclick="addAsset()">➕ Add Asset</button>
+  <button onclick="exportToCSV()">⬇️ Export CSV</button>
 </div>
 
 <!-- Asset Table -->
@@ -229,7 +230,7 @@
     document.getElementById("assetStatus").value = a.status;
     document.getElementById("assetIP").value = a.ip;
 
-    assets.splice(index, 1); // remove before re-adding
+    assets.splice(index, 1);
     renderTable();
   }
 
@@ -240,6 +241,17 @@
     rows.sort((a, b) => getValue(a).localeCompare(getValue(b)) * (isAsc ? 1 : -1));
     rows.forEach(row => tbody.appendChild(row));
     tbody.setAttribute("data-sort", isAsc ? "asc" : "desc");
+  }
+
+  function exportToCSV() {
+    const headers = ['ID','Year','Name','Type','Department','Status','IP','Location','Assigned To','Warranty','Image'];
+    const rows = assets.map(a => [a.id, a.year, a.name, a.type, a.department, a.status, a.ip, a.location, a.user, a.warranty, a.image]);
+    let csv = [headers, ...rows].map(row => row.map(value => `"${value}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "assets.csv";
+    link.click();
   }
 </script>
 
