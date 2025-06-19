@@ -43,7 +43,7 @@
       border-radius: 5px;
       font-size: 14px;
       cursor: pointer;
-      margin-top: 10px;
+      margin: 5px;
     }
 
     button:hover {
@@ -65,13 +65,12 @@
     th {
       background-color: #0078d4;
       color: white;
+      cursor: pointer;
     }
 
-    .actions {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
+    img.thumbnail {
+      width: 50px;
+      height: auto;
     }
 
     @media (max-width: 768px) {
@@ -84,167 +83,165 @@
 </head>
 <body>
 
-  <h2>Company IT Asset Tracker</h2>
+<h2>Company IT Asset Tracker</h2>
 
-  <!-- Asset Entry Form -->
-  <div class="section">
-    <h3>Add New Asset</h3>
-    <input type="text" id="assetId" placeholder="Asset ID" required>
-    <input type="text" id="assetyear" placeholder="Asset Year" required>
-    <input type="text" id="assetName" placeholder="Asset Name" required>
-    <select id="assetType">
-      <option value="">Select Type</option>
-      <option value="Laptop">Laptop</option>
-      <option value="Server">Server</option>
-      <option value="Router">Router</option>
-    </select>
-    <select id="assetDept">
-      <option value="">Select Department</option>
-      <option value="IT">IT</option>
-      <option value="Finance">Finance</option>
-      <option value="HR">HR</option>
-    </select>
-    <select id="assetStatus">
-      <option value="">Status</option>
-      <option value="Active">Active</option>
-      <option value="Inactive">Inactive</option>
-    </select>
-    <input type="text" id="assetIP" placeholder="IP Address" required>
-    <br>
-    <button onclick="addAsset()">➕ Add Asset</button>
-  </div>
+<!-- Asset Entry Form -->
+<div class="section">
+  <h3>Add New Asset</h3>
+  <input type="text" id="assetId" placeholder="Asset ID" required>
+  <input type="text" id="assetyear" placeholder="Asset Year" required>
+  <input type="text" id="assetName" placeholder="Asset Name" required>
+  <input type="text" id="assetLocation" placeholder="Location" required>
+  <input type="text" id="assetUser" placeholder="Assigned To" required>
+  <input type="date" id="assetWarranty" placeholder="Warranty Expiry">
+  <select id="assetType">
+    <option value="">Select Type</option>
+    <option value="Laptop">Laptop</option>
+    <option value="Server">Server</option>
+    <option value="Router">Router</option>
+  </select>
+  <select id="assetDept">
+    <option value="">Select Department</option>
+    <option value="IT">IT</option>
+    <option value="Finance">Finance</option>
+    <option value="HR">HR</option>
+  </select>
+  <select id="assetStatus">
+    <option value="">Status</option>
+    <option value="Active">Active</option>
+    <option value="Inactive">Inactive</option>
+  </select>
+  <input type="text" id="assetIP" placeholder="IP Address" required>
+  <input type="file" id="assetImage" accept="image/*">
+  <br>
+  <button onclick="addAsset()">➕ Add Asset</button>
+</div>
 
-  <!-- Filter & Export Section -->
-  <div class="section actions">
-    <div>
-      <select id="filterDept">
-        <option value="">All Departments</option>
-        <option value="IT">IT</option>
-        <option value="Finance">Finance</option>
-        <option value="HR">HR</option>
-      </select>
+<!-- Asset Table -->
+<div class="section">
+  <table id="assetTable">
+    <thead>
+      <tr>
+        <th onclick="sortTable(0)">ID</th>
+        <th onclick="sortTable(1)">Year</th>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Department</th>
+        <th>Status</th>
+        <th>IP</th>
+        <th>Location</th>
+        <th>Assigned To</th>
+        <th>Warranty</th>
+        <th>Image</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
 
-      <select id="filterType">
-        <option value="">All Types</option>
-        <option value="Laptop">Laptop</option>
-        <option value="Server">Server</option>
-        <option value="Router">Router</option>
-      </select>
+<script>
+  let assets = [];
+  const tbody = document.querySelector("#assetTable tbody");
 
-      <select id="filterStatus">
-        <option value="">All Statuses</option>
-        <option value="Active">Active</option>
-        <option value="Inactive">Inactive</option>
-      </select>
+  function readImage(input, callback) {
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = e => callback(e.target.result);
+      reader.readAsDataURL(input.files[0]);
+    } else {
+      callback('');
+    }
+  }
 
-      <input type="text" id="searchInput" placeholder="Search by name, ID, IP, or year">
-    </div>
+  function addAsset() {
+    readImage(document.getElementById("assetImage"), (imageData) => {
+      const asset = {
+        id: document.getElementById("assetId").value.trim(),
+        year: document.getElementById("assetyear").value.trim(),
+        name: document.getElementById("assetName").value.trim(),
+        location: document.getElementById("assetLocation").value.trim(),
+        user: document.getElementById("assetUser").value.trim(),
+        warranty: document.getElementById("assetWarranty").value,
+        type: document.getElementById("assetType").value,
+        department: document.getElementById("assetDept").value,
+        status: document.getElementById("assetStatus").value,
+        ip: document.getElementById("assetIP").value.trim(),
+        image: imageData
+      };
 
-    <button onclick="exportToCSV()">⬇️ Export CSV</button>
-  </div>
-
-  <!-- Asset Table -->
-  <div class="section">
-    <table id="assetTable">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Year</th>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Department</th>
-          <th>Status</th>
-          <th>IP Address</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-
-  <script>
-    const assets = [];
-
-    const tbody = document.querySelector("#assetTable tbody");
-    const deptFilter = document.getElementById("filterDept");
-    const typeFilter = document.getElementById("filterType");
-    const statusFilter = document.getElementById("filterStatus");
-    const searchInput = document.getElementById("searchInput");
-
-    function addAsset() {
-      const id = document.getElementById("assetId").value.trim();
-      const year = document.getElementById("assetyear").value.trim();
-      const name = document.getElementById("assetName").value.trim();
-      const type = document.getElementById("assetType").value;
-      const dept = document.getElementById("assetDept").value;
-      const status = document.getElementById("assetStatus").value;
-      const ip = document.getElementById("assetIP").value.trim();
-
-      if (!id || !year || !name || !type || !dept || !status || !ip) {
-        alert("Please fill in all fields.");
+      if (!asset.id || !asset.year || !asset.name || !asset.type || !asset.department || !asset.status || !asset.ip) {
+        alert("Please fill in all required fields.");
         return;
       }
 
-      assets.push({ id, year, name, type, department: dept, status, ip });
+      assets.push(asset);
+      clearForm();
+      renderTable();
+    });
+  }
 
-      // Reset form
-      document.getElementById("assetId").value = '';
-      document.getElementById("assetyear").value = '';
-      document.getElementById("assetName").value = '';
-      document.getElementById("assetType").value = '';
-      document.getElementById("assetDept").value = '';
-      document.getElementById("assetStatus").value = '';
-      document.getElementById("assetIP").value = '';
+  function clearForm() {
+    document.querySelectorAll('input, select').forEach(el => el.value = '');
+  }
 
+  function renderTable() {
+    tbody.innerHTML = '';
+    assets.forEach((asset, index) => {
+      const row = tbody.insertRow();
+      row.innerHTML = `
+        <td>${asset.id}</td>
+        <td>${asset.year}</td>
+        <td>${asset.name}</td>
+        <td>${asset.type}</td>
+        <td>${asset.department}</td>
+        <td>${asset.status}</td>
+        <td>${asset.ip}</td>
+        <td>${asset.location}</td>
+        <td>${asset.user}</td>
+        <td>${asset.warranty}</td>
+        <td>${asset.image ? `<img src="${asset.image}" class="thumbnail">` : ''}</td>
+        <td>
+          <button onclick="editAsset(${index})">✏️ Edit</button>
+          <button onclick="deleteAsset(${index})">🗑️ Delete</button>
+        </td>
+      `;
+    });
+  }
+
+  function deleteAsset(index) {
+    if (confirm("Delete this asset?")) {
+      assets.splice(index, 1);
       renderTable();
     }
+  }
 
-    function renderTable() {
-      const dept = deptFilter.value;
-      const type = typeFilter.value;
-      const status = statusFilter.value;
-      const search = searchInput.value.toLowerCase();
+  function editAsset(index) {
+    const a = assets[index];
+    document.getElementById("assetId").value = a.id;
+    document.getElementById("assetyear").value = a.year;
+    document.getElementById("assetName").value = a.name;
+    document.getElementById("assetLocation").value = a.location;
+    document.getElementById("assetUser").value = a.user;
+    document.getElementById("assetWarranty").value = a.warranty;
+    document.getElementById("assetType").value = a.type;
+    document.getElementById("assetDept").value = a.department;
+    document.getElementById("assetStatus").value = a.status;
+    document.getElementById("assetIP").value = a.ip;
 
-      const filtered = assets.filter(asset =>
-        (dept === '' || asset.department === dept) &&
-        (type === '' || asset.type === type) &&
-        (status === '' || asset.status === status) &&
-        (
-          asset.name.toLowerCase().includes(search) ||
-          asset.id.toLowerCase().includes(search) ||
-          asset.ip.includes(search) ||
-          asset.year.includes(search)
-        )
-      );
+    assets.splice(index, 1); // remove before re-adding
+    renderTable();
+  }
 
-      tbody.innerHTML = filtered.map(asset => `
-        <tr>
-          <td>${asset.id}</td>
-          <td>${asset.year}</td>
-          <td>${asset.name}</td>
-          <td>${asset.type}</td>
-          <td>${asset.department}</td>
-          <td>${asset.status}</td>
-          <td>${asset.ip}</td>
-        </tr>
-      `).join('');
-    }
-
-    function exportToCSV() {
-      const header = ['ID', 'Year', 'Name', 'Type', 'Department', 'Status', 'IP Address'];
-      const rows = assets.map(asset => [asset.id, asset.year, asset.name, asset.type, asset.department, asset.status, asset.ip]);
-
-      let csvContent = 'data:text/csv;charset=utf-8,' + [header, ...rows].map(e => e.join(",")).join("\n");
-      const encodedUri = encodeURI(csvContent);
-      const link = document.createElement("a");
-      link.setAttribute("href", encodedUri);
-      link.setAttribute("download", "asset_tracker.csv");
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-
-    deptFilter.onchange = typeFilter.onchange = statusFilter.onchange = searchInput.oninput = renderTable;
-  </script>
+  function sortTable(colIndex) {
+    const getValue = row => row.cells[colIndex].innerText.toLowerCase();
+    const rows = Array.from(tbody.rows);
+    const isAsc = tbody.getAttribute("data-sort") !== "asc";
+    rows.sort((a, b) => getValue(a).localeCompare(getValue(b)) * (isAsc ? 1 : -1));
+    rows.forEach(row => tbody.appendChild(row));
+    tbody.setAttribute("data-sort", isAsc ? "asc" : "desc");
+  }
+</script>
 
 </body>
 </html>
