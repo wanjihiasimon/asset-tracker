@@ -73,6 +73,16 @@
       height: auto;
     }
 
+    .search-container {
+      margin: 10px 0;
+      text-align: right;
+    }
+
+    .search-container input {
+      width: 300px;
+      max-width: 100%;
+    }
+
     @media (max-width: 768px) {
       input, select {
         width: 100%;
@@ -116,6 +126,11 @@
   <br>
   <button onclick="addAsset()">➕ Add Asset</button>
   <button onclick="exportToCSV()">⬇️ Export CSV</button>
+</div>
+
+<!-- Search Bar -->
+<div class="section search-container">
+  <input type="text" id="searchInput" placeholder="Search assets..." oninput="renderTable()">
 </div>
 
 <!-- Asset Table -->
@@ -187,27 +202,30 @@
   }
 
   function renderTable() {
+    const searchValue = document.getElementById("searchInput").value.toLowerCase();
     tbody.innerHTML = '';
-    assets.forEach((asset, index) => {
-      const row = tbody.insertRow();
-      row.innerHTML = `
-        <td>${asset.id}</td>
-        <td>${asset.year}</td>
-        <td>${asset.name}</td>
-        <td>${asset.type}</td>
-        <td>${asset.department}</td>
-        <td>${asset.status}</td>
-        <td>${asset.ip}</td>
-        <td>${asset.location}</td>
-        <td>${asset.user}</td>
-        <td>${asset.warranty}</td>
-        <td>${asset.image ? `<img src="${asset.image}" class="thumbnail">` : ''}</td>
-        <td>
-          <button onclick="editAsset(${index})">✏️ Edit</button>
-          <button onclick="deleteAsset(${index})">🗑️ Delete</button>
-        </td>
-      `;
-    });
+    assets
+      .filter(asset => Object.values(asset).some(val => String(val).toLowerCase().includes(searchValue)))
+      .forEach((asset, index) => {
+        const row = tbody.insertRow();
+        row.innerHTML = `
+          <td>${asset.id}</td>
+          <td>${asset.year}</td>
+          <td>${asset.name}</td>
+          <td>${asset.type}</td>
+          <td>${asset.department}</td>
+          <td>${asset.status}</td>
+          <td>${asset.ip}</td>
+          <td>${asset.location}</td>
+          <td>${asset.user}</td>
+          <td>${asset.warranty}</td>
+          <td>${asset.image ? `<img src="${asset.image}" class="thumbnail">` : ''}</td>
+          <td>
+            <button onclick="editAsset(${index})">✏️ Edit</button>
+            <button onclick="deleteAsset(${index})">🗑️ Delete</button>
+          </td>
+        `;
+      });
   }
 
   function deleteAsset(index) {
