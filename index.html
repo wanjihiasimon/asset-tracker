@@ -90,6 +90,7 @@
   <div class="section">
     <h3>Add New Asset</h3>
     <input type="text" id="assetId" placeholder="Asset ID" required>
+    <input type="text" id="assetyear" placeholder="Asset Year" required>
     <input type="text" id="assetName" placeholder="Asset Name" required>
     <select id="assetType">
       <option value="">Select Type</option>
@@ -136,7 +137,7 @@
         <option value="Inactive">Inactive</option>
       </select>
 
-      <input type="text" id="searchInput" placeholder="Search by name, ID, or IP">
+      <input type="text" id="searchInput" placeholder="Search by name, ID, IP, or year">
     </div>
 
     <button onclick="exportToCSV()">⬇️ Export CSV</button>
@@ -148,6 +149,7 @@
       <thead>
         <tr>
           <th>ID</th>
+          <th>Year</th>
           <th>Name</th>
           <th>Type</th>
           <th>Department</th>
@@ -170,21 +172,23 @@
 
     function addAsset() {
       const id = document.getElementById("assetId").value.trim();
+      const year = document.getElementById("assetyear").value.trim();
       const name = document.getElementById("assetName").value.trim();
       const type = document.getElementById("assetType").value;
       const dept = document.getElementById("assetDept").value;
       const status = document.getElementById("assetStatus").value;
       const ip = document.getElementById("assetIP").value.trim();
 
-      if (!id || !name || !type || !dept || !status || !ip) {
+      if (!id || !year || !name || !type || !dept || !status || !ip) {
         alert("Please fill in all fields.");
         return;
       }
 
-      assets.push({ id, name, type, department: dept, status, ip });
+      assets.push({ id, year, name, type, department: dept, status, ip });
 
       // Reset form
       document.getElementById("assetId").value = '';
+      document.getElementById("assetyear").value = '';
       document.getElementById("assetName").value = '';
       document.getElementById("assetType").value = '';
       document.getElementById("assetDept").value = '';
@@ -207,13 +211,15 @@
         (
           asset.name.toLowerCase().includes(search) ||
           asset.id.toLowerCase().includes(search) ||
-          asset.ip.includes(search)
+          asset.ip.includes(search) ||
+          asset.year.includes(search)
         )
       );
 
       tbody.innerHTML = filtered.map(asset => `
         <tr>
           <td>${asset.id}</td>
+          <td>${asset.year}</td>
           <td>${asset.name}</td>
           <td>${asset.type}</td>
           <td>${asset.department}</td>
@@ -224,8 +230,8 @@
     }
 
     function exportToCSV() {
-      const header = ['ID', 'Name', 'Type', 'Department', 'Status', 'IP Address'];
-      const rows = assets.map(asset => [asset.id, asset.name, asset.type, asset.department, asset.status, asset.ip]);
+      const header = ['ID', 'Year', 'Name', 'Type', 'Department', 'Status', 'IP Address'];
+      const rows = assets.map(asset => [asset.id, asset.year, asset.name, asset.type, asset.department, asset.status, asset.ip]);
 
       let csvContent = 'data:text/csv;charset=utf-8,' + [header, ...rows].map(e => e.join(",")).join("\n");
       const encodedUri = encodeURI(csvContent);
