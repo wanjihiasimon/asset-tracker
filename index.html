@@ -10,11 +10,11 @@
       background-color: #f4f4f4;
       margin: 0;
       padding: 20px;
+      transition: background 0.3s, color 0.3s;
     }
 
     h2 {
       text-align: center;
-      margin-bottom: 10px;
       color: #333;
     }
 
@@ -50,12 +50,6 @@
       background-color: #005a9e;
     }
 
-    body.dark {
-  background: #121212;
-  color: white;
-   }
-
-
     table {
       width: 100%;
       border-collapse: collapse;
@@ -89,24 +83,40 @@
       max-width: 100%;
     }
 
+    #summaryStats {
+      font-weight: bold;
+      padding: 10px;
+      background-color: #f0f0f0;
+      border-radius: 5px;
+      margin-top: 10px;
+    }
+
+    body.dark {
+      background: #121212;
+      color: white;
+    }
+
+    body.dark .section {
+      background: #1f1f1f;
+    }
+
+    @media print {
+      button, .search-container, .dark-toggle, #gallery { display: none; }
+      body { background: white; color: black; }
+    }
+
     @media (max-width: 768px) {
       input, select {
         width: 100%;
         margin: 10px 0;
       }
     }
-    @media print {
-  button, .search-container { display: none; }
-  body { background: white; }
-}
-
   </style>
 </head>
 <body>
 
 <h2>Company IT Asset Tracker</h2>
- <button onclick="toggleDarkMode()">🌓 Toggle Dark Mode</button>
-
+<button class="dark-toggle" onclick="toggleDarkMode()">🌓 Toggle Dark Mode</button>
 <a href="licence-management.html" target="_blank">License Management Dashboard</a>
 
 <!-- Asset Entry Form -->
@@ -136,25 +146,21 @@
     <option value="Inactive">Inactive</option>
   </select>
   <input type="text" id="assetIP" placeholder="IP Address" required>
-  <input type="file" id="assetImage" accept="image/*" capture="environment">
+  <input type="file" id="assetImage" accept="image/*">
   <br>
-  <input type="file" id="csvFile" accept=".csv" />
-<button onclick="importCSV()">📤 Import CSV</button>
   <button onclick="addAsset()">➕ Add Asset</button>
   <button onclick="exportToCSV()">⬇️ Export CSV</button>
   <button onclick="exportToPDF()">📄 Export PDF</button>
+  <button onclick="window.print()">🖨️ Print</button>
   <button onclick="showGallery()">🖼️ View Images</button>
-<div id="gallery"></div>
-<button onclick="window.print()">🖨️ Print</button>
-
 </div>
 
-<!-- Search Bar -->
+<!-- Search -->
 <div class="section search-container">
   <input type="text" id="searchInput" placeholder="Search assets..." oninput="renderTable()">
 </div>
 
-<!-- Asset Table -->
+<!-- Table -->
 <div class="section" id="tableSection">
   <table id="assetTable">
     <thead>
@@ -169,6 +175,7 @@
         <th>Location</th>
         <th>Assigned To</th>
         <th>Warranty</th>
+        <th>Age</th>
         <th>Image</th>
         <th>Actions</th>
       </tr>
@@ -176,14 +183,24 @@
     <tbody></tbody>
   </table>
 </div>
-<div id="summaryStats">Total: 0 | Active: 0 | Inactive: 0</div>
 
+<!-- Summary -->
+<div class="section" id="summaryStats">Total: 0 | Laptops: 0 | Servers: 0 | Routers: 0 | Active: 0 | Inactive: 0</div>
+<div class="section" id="gallery"></div>
 
-<!-- JS Libraries and Scripts -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
   let assets = [];
   const tbody = document.querySelector("#assetTable tbody");
+
+  function toggleDarkMode() {
+    document.body.classList.toggle("dark");
+  }
+
+  function calculateAge(year) {
+    const current = new Date().getFullYear();
+    return year && !isNaN(year) ? `${current - parseInt(year)} yrs` : "N/A";
+  }
 
   function readImage(input, callback) {
     if (input.files && input.files[0]) {
@@ -221,11 +238,6 @@
       renderTable();
     });
   }
-  
-  function toggleDarkMode() {
-     document.body.classList.toggle("dark");
-  }
-
 
   function clearForm() {
     document.querySelectorAll('input, select').forEach(el => el.value = '');
@@ -234,9 +246,18 @@
   function renderTable() {
     const searchValue = document.getElementById("searchInput").value.toLowerCase();
     tbody.innerHTML = '';
+    let counts = { total: 0, laptop: 0, server: 0, router: 0, active: 0, inactive: 0 };
+
     assets
       .filter(asset => Object.values(asset).some(val => String(val).toLowerCase().includes(searchValue)))
       .forEach((asset, index) => {
+        counts.total++;
+        if (asset.type === "Laptop") counts.laptop++;
+        if (asset.type === "Server") counts.server++;
+        if (asset.type === "Router") counts.router++;
+        if (asset.status === "Active") counts.active++;
+        if (asset.status === "Inactive") counts.inactive++;
+
         const row = tbody.insertRow();
         row.innerHTML = `
           <td>${asset.id}</td>
@@ -249,6 +270,7 @@
           <td>${asset.location}</td>
           <td>${asset.user}</td>
           <td>${asset.warranty}</td>
+          <td>${calculateAge(asset.year)}</td>
           <td>${asset.image ? `<img src="${asset.image}" class="thumbnail">` : ''}</td>
           <td>
             <button onclick="editAsset(${index})">✏️ Edit</button>
@@ -256,6 +278,9 @@
           </td>
         `;
       });
+
+    document.getElementById("summaryStats").textContent =
+      `Total: ${counts.total} | Laptops: ${counts.laptop} | Servers: ${counts.server} | Routers: ${counts.router} | Active: ${counts.active} | Inactive: ${counts.inactive}`;
   }
 
   function deleteAsset(index) {
@@ -282,19 +307,18 @@
   }
 
   function sortTable(colIndex) {
-    const getValue = row => row.cells[colIndex].innerText.toLowerCase();
     const rows = Array.from(tbody.rows);
     const isAsc = tbody.getAttribute("data-sort") !== "asc";
-    rows.sort((a, b) => getValue(a).localeCompare(getValue(b)) * (isAsc ? 1 : -1));
+    rows.sort((a, b) => a.cells[colIndex].innerText.localeCompare(b.cells[colIndex].innerText) * (isAsc ? 1 : -1));
     rows.forEach(row => tbody.appendChild(row));
     tbody.setAttribute("data-sort", isAsc ? "asc" : "desc");
   }
 
   function exportToCSV() {
-    const headers = ['ID','Year','Name','Type','Department','Status','IP','Location','Assigned To','Warranty','Image'];
-    const rows = assets.map(a => [a.id, a.year, a.name, a.type, a.department, a.status, a.ip, a.location, a.user, a.warranty, a.image]);
-    let csv = [headers, ...rows].map(row => row.map(value => `"${value}"`).join(",")).join("\n");
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const headers = ['ID','Year','Name','Type','Department','Status','IP','Location','Assigned To','Warranty','Age','Image'];
+    const rows = assets.map(a => [a.id, a.year, a.name, a.type, a.department, a.status, a.ip, a.location, a.user, a.warranty, calculateAge(a.year), a.image]);
+    const csv = [headers, ...rows].map(row => row.map(val => `"${val}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: 'text/csv' });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
     link.download = "assets.csv";
@@ -303,19 +327,22 @@
 
   function exportToPDF() {
     const element = document.getElementById("tableSection");
-    const opt = {
-      margin:       0.3,
-      filename:     'assets.pdf',
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2 },
-      jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
-    };
-    html2pdf().set(opt).from(element).save();
+    html2pdf().set({
+      margin: 0.3,
+      filename: 'assets.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' }
+    }).from(element).save();
   }
-  assets.forEach(a => {
-  if (a.image) gallery.innerHTML += `<img src="${a.image}" class="thumbnail">`;
-});
 
+  function showGallery() {
+    const gallery = document.getElementById("gallery");
+    gallery.innerHTML = "<h3>Image Gallery</h3>";
+    assets.forEach(a => {
+      if (a.image) gallery.innerHTML += `<img src="${a.image}" class="thumbnail" style="margin: 5px;">`;
+    });
+  }
 </script>
 
 </body>
