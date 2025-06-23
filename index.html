@@ -127,7 +127,7 @@
   <br>
   <button onclick="addAsset()">➕ Add Asset</button>
   <button onclick="exportToCSV()">⬇️ Export CSV</button>
-<button onclick="exportToPDF()">📄 Export PDF</button>
+  <button onclick="exportToPDF()">📄 Export PDF</button>
 </div>
 
 <!-- Search Bar -->
@@ -136,7 +136,7 @@
 </div>
 
 <!-- Asset Table -->
-<div class="section">
+<div class="section" id="tableSection">
   <table id="assetTable">
     <thead>
       <tr>
@@ -158,6 +158,8 @@
   </table>
 </div>
 
+<!-- JS Libraries and Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
   let assets = [];
   const tbody = document.querySelector("#assetTable tbody");
@@ -273,16 +275,8 @@
     link.click();
   }
 
-  function emailCSV() {
-    exportToCSV();
-    alert("Attach the downloaded CSV file to your email app manually.");
-    // You can integrate with email APIs like EmailJS or backend SMTP service
-    // to send emails directly if this is hosted on a server with JS backend.
-  }
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-<script>
   function exportToPDF() {
-    const element = document.querySelector('.section:nth-of-type(3)'); // Table section
+    const element = document.getElementById("tableSection");
     const opt = {
       margin:       0.3,
       filename:     'assets.pdf',
