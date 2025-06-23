@@ -50,6 +50,12 @@
       background-color: #005a9e;
     }
 
+    body.dark {
+  background: #121212;
+  color: white;
+   }
+
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -89,11 +95,18 @@
         margin: 10px 0;
       }
     }
+    @media print {
+  button, .search-container { display: none; }
+  body { background: white; }
+}
+
   </style>
 </head>
 <body>
 
 <h2>Company IT Asset Tracker</h2>
+ <button onclick="toggleDarkMode()">🌓 Toggle Dark Mode</button>
+
 <a href="licence-management.html" target="_blank">License Management Dashboard</a>
 
 <!-- Asset Entry Form -->
@@ -125,9 +138,15 @@
   <input type="text" id="assetIP" placeholder="IP Address" required>
   <input type="file" id="assetImage" accept="image/*" capture="environment">
   <br>
+  <input type="file" id="csvFile" accept=".csv" />
+<button onclick="importCSV()">📤 Import CSV</button>
   <button onclick="addAsset()">➕ Add Asset</button>
   <button onclick="exportToCSV()">⬇️ Export CSV</button>
   <button onclick="exportToPDF()">📄 Export PDF</button>
+  <button onclick="showGallery()">🖼️ View Images</button>
+<div id="gallery"></div>
+<button onclick="window.print()">🖨️ Print</button>
+
 </div>
 
 <!-- Search Bar -->
@@ -157,6 +176,8 @@
     <tbody></tbody>
   </table>
 </div>
+<div id="summaryStats">Total: 0 | Active: 0 | Inactive: 0</div>
+
 
 <!-- JS Libraries and Scripts -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -200,6 +221,11 @@
       renderTable();
     });
   }
+  
+  function toggleDarkMode() {
+     document.body.classList.toggle("dark");
+  }
+
 
   function clearForm() {
     document.querySelectorAll('input, select').forEach(el => el.value = '');
@@ -286,6 +312,10 @@
     };
     html2pdf().set(opt).from(element).save();
   }
+  assets.forEach(a => {
+  if (a.image) gallery.innerHTML += `<img src="${a.image}" class="thumbnail">`;
+});
+
 </script>
 
 </body>
