@@ -94,7 +94,7 @@
 <body>
 
 <h2>Company IT Asset Tracker</h2>
-  <a href="licence-management.html" target="_blank">License Management Dashboard</a>
+<a href="licence-management.html" target="_blank">License Management Dashboard</a>
 
 <!-- Asset Entry Form -->
 <div class="section">
@@ -123,10 +123,11 @@
     <option value="Inactive">Inactive</option>
   </select>
   <input type="text" id="assetIP" placeholder="IP Address" required>
-  <input type="file" id="assetImage" accept="image/*">
+  <input type="file" id="assetImage" accept="image/*" capture="environment">
   <br>
   <button onclick="addAsset()">➕ Add Asset</button>
   <button onclick="exportToCSV()">⬇️ Export CSV</button>
+  <button onclick="emailCSV()">📧 Email CSV</button>
 </div>
 
 <!-- Search Bar -->
@@ -248,7 +249,6 @@
     document.getElementById("assetDept").value = a.department;
     document.getElementById("assetStatus").value = a.status;
     document.getElementById("assetIP").value = a.ip;
-
     assets.splice(index, 1);
     renderTable();
   }
@@ -271,6 +271,13 @@
     link.href = URL.createObjectURL(blob);
     link.download = "assets.csv";
     link.click();
+  }
+
+  function emailCSV() {
+    exportToCSV();
+    alert("Attach the downloaded CSV file to your email app manually.");
+    // You can integrate with email APIs like EmailJS or backend SMTP service
+    // to send emails directly if this is hosted on a server with JS backend.
   }
 </script>
 
