@@ -1,3 +1,4 @@
+<!-- Save this as index.html or replace your existing version -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,12 +13,10 @@
       padding: 20px;
       transition: background 0.3s, color 0.3s;
     }
-
     h2 {
       text-align: center;
       color: #333;
     }
-
     .section {
       background-color: #fff;
       padding: 20px;
@@ -25,7 +24,6 @@
       border-radius: 8px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     }
-
     input, select {
       padding: 10px;
       font-size: 14px;
@@ -34,7 +32,6 @@
       border-radius: 5px;
       width: 170px;
     }
-
     button {
       background-color: #0078d4;
       color: #fff;
@@ -45,44 +42,36 @@
       cursor: pointer;
       margin: 5px;
     }
-
     button:hover {
       background-color: #005a9e;
     }
-
     table {
       width: 100%;
       border-collapse: collapse;
       background: white;
     }
-
     th, td {
       padding: 10px;
       border: 1px solid #ddd;
       text-align: left;
     }
-
     th {
       background-color: #0078d4;
       color: white;
       cursor: pointer;
     }
-
     img.thumbnail {
       width: 50px;
       height: auto;
     }
-
     .search-container {
       margin: 10px 0;
       text-align: right;
     }
-
     .search-container input {
       width: 300px;
       max-width: 100%;
     }
-
     #summaryStats {
       font-weight: bold;
       padding: 10px;
@@ -90,21 +79,17 @@
       border-radius: 5px;
       margin-top: 10px;
     }
-
     body.dark {
       background: #121212;
       color: white;
     }
-
     body.dark .section {
       background: #1f1f1f;
     }
-
     @media print {
       button, .search-container, .dark-toggle, #gallery { display: none; }
       body { background: white; color: black; }
     }
-
     @media (max-width: 768px) {
       input, select {
         width: 100%;
@@ -119,7 +104,6 @@
 <button class="dark-toggle" onclick="toggleDarkMode()">🌓 Toggle Dark Mode</button>
 <a href="licence-management.html" target="_blank">License Management Dashboard</a>
 
-<!-- Asset Entry Form -->
 <div class="section">
   <h3>Add New Asset</h3>
   <input type="text" id="assetId" placeholder="Asset ID" required>
@@ -153,14 +137,13 @@
   <button onclick="exportToPDF()">📄 Export PDF</button>
   <button onclick="window.print()">🖨️ Print</button>
   <button onclick="showGallery()">🖼️ View Images</button>
+  <button onclick="clearAllAssets()">🗑️ Clear All</button>
 </div>
 
-<!-- Search -->
 <div class="section search-container">
   <input type="text" id="searchInput" placeholder="Search assets..." oninput="renderTable()">
 </div>
 
-<!-- Table -->
 <div class="section" id="tableSection">
   <table id="assetTable">
     <thead>
@@ -184,7 +167,6 @@
   </table>
 </div>
 
-<!-- Summary -->
 <div class="section" id="summaryStats">Total: 0 | Laptops: 0 | Servers: 0 | Routers: 0 | Active: 0 | Inactive: 0</div>
 <div class="section" id="gallery"></div>
 
@@ -200,6 +182,10 @@
   function calculateAge(year) {
     const current = new Date().getFullYear();
     return year && !isNaN(year) ? `${current - parseInt(year)} yrs` : "N/A";
+  }
+
+  function saveToLocalStorage() {
+    localStorage.setItem("assetData", JSON.stringify(assets));
   }
 
   function readImage(input, callback) {
@@ -234,6 +220,7 @@
       }
 
       assets.push(asset);
+      saveToLocalStorage();
       clearForm();
       renderTable();
     });
@@ -286,6 +273,7 @@
   function deleteAsset(index) {
     if (confirm("Delete this asset?")) {
       assets.splice(index, 1);
+      saveToLocalStorage();
       renderTable();
     }
   }
@@ -303,6 +291,7 @@
     document.getElementById("assetStatus").value = a.status;
     document.getElementById("assetIP").value = a.ip;
     assets.splice(index, 1);
+    saveToLocalStorage();
     renderTable();
   }
 
@@ -343,6 +332,27 @@
       if (a.image) gallery.innerHTML += `<img src="${a.image}" class="thumbnail" style="margin: 5px;">`;
     });
   }
+
+  function clearAllAssets() {
+    if (confirm("This will delete all assets. Continue?")) {
+      assets = [];
+      saveToLocalStorage();
+      renderTable();
+    }
+  }
+
+  // Load assets from localStorage on page load
+  window.onload = function () {
+    const stored = localStorage.getItem("assetData");
+    if (stored) {
+      try {
+        assets = JSON.parse(stored);
+        renderTable();
+      } catch (e) {
+        console.error("Failed to parse localStorage:", e);
+      }
+    }
+  };
 </script>
 
 </body>
